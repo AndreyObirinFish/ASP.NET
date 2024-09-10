@@ -12,7 +12,7 @@ namespace Pcf.Administration.Core.Abstractions.Repositories
     {
         Task<IEnumerable<T>> GetAllAsync();
         
-        Task<T> GetByIdAsync(Guid id);
+        Task<IQueryable<T>> GetByIdAsync(Guid id);
         
         Task<IEnumerable<T>> GetRangeByIdsAsync(List<Guid> ids);
         

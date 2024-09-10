@@ -28,9 +28,9 @@ namespace Pcf.Administration.DataAccess.Repositories
             return entities;
         }
 
-        public async Task<T> GetByIdAsync(Guid id)
+        public async Task<IQueryable<T>> GetByIdAsync(Guid id)
         {
-            var entity = await _dataContext.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
+            var entity = _dataContext.Set<T>().Where(x => x.Id == id);
 
             return entity;
         }

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MongoDB.EntityFrameworkCore.Extensions;
 using Pcf.Administration.Core.Domain.Administration;
-using Pcf.Administration.DataAccess.Data;
 
 namespace Pcf.Administration.DataAccess
 {
@@ -19,12 +19,14 @@ namespace Pcf.Administration.DataAccess
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)
         {
-
+            Database.AutoTransactionBehavior = AutoTransactionBehavior.Never;
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Role>().ToCollection("roles");
+            modelBuilder.Entity<Employee>().ToCollection("employees");
         }
     }
 }

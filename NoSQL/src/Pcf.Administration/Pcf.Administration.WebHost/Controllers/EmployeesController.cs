@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pcf.Administration.WebHost.Models;
 using Pcf.Administration.Core.Abstractions.Repositories;
 using Pcf.Administration.Core.Domain.Administration;
+using Microsoft.EntityFrameworkCore;
 
 namespace Pcf.Administration.WebHost.Controllers
 {
@@ -18,12 +19,16 @@ namespace Pcf.Administration.WebHost.Controllers
         : ControllerBase
     {
         private readonly IRepository<Employee> _employeeRepository;
+        private readonly IRepository<Role> _roleRepository;
 
-        public EmployeesController(IRepository<Employee> employeeRepository)
+        public EmployeesController(
+            IRepository<Employee> employeeRepository, 
+            IRepository<Role> roleRepository)
         {
             _employeeRepository = employeeRepository;
+            _roleRepository = roleRepository;
         }
-        
+
         /// <summary>
         /// Получить данные всех сотрудников
         /// </summary>
@@ -52,11 +57,16 @@ namespace Pcf.Administration.WebHost.Controllers
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<EmployeeResponse>> GetEmployeeByIdAsync(Guid id)
         {
-            var employee = await _employeeRepository.GetByIdAsync(id);
+            var employeeQuery = await _employeeRepository.GetByIdAsync(id);
+            var employee = await employeeQuery.FirstOrDefaultAsync();
 
             if (employee == null)
                 return NotFound();
 
+            var roleQuery = await _roleRepository.GetByIdAsync(employee.RoleId);
+            //var role =
+            await roleQuery.FirstOrDefaultAsync();
+      //      employee.Role = role;
             var employeeModel = new EmployeeResponse()
             {
                 Id = employee.Id,
@@ -83,7 +93,8 @@ namespace Pcf.Administration.WebHost.Controllers
         
         public async Task<IActionResult> UpdateAppliedPromocodesAsync(Guid id)
         {
-            var employee = await _employeeRepository.GetByIdAsync(id);
+            var result = await _employeeRepository.GetByIdAsync(id);
+            var employee = await result.FirstOrDefaultAsync();
 
             if (employee == null)
                 return NotFound();

@@ -14,8 +14,11 @@
         {
             _dataContext.Database.EnsureDeleted();
             _dataContext.Database.EnsureCreated();
-            
-            _dataContext.AddRange(FakeDataFactory.Employees);
+
+            foreach (var item in FakeDataFactory.Employees)
+            {
+                _dataContext.Employees.Add(item);
+            }
             _dataContext.SaveChanges();
         }
     }

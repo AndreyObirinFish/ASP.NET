@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Castle.Core.Resource;
 using Microsoft.AspNetCore.Mvc;
 using Pcf.GivingToCustomer.Core.Abstractions.Repositories;
 using Pcf.GivingToCustomer.Core.Domain;
+using Pcf.GivingToCustomer.DataAccess.Repositories;
 using Pcf.GivingToCustomer.WebHost.Mappers;
 using Pcf.GivingToCustomer.WebHost.Models;
 
@@ -21,15 +23,19 @@ namespace Pcf.GivingToCustomer.WebHost.Controllers
         private readonly IRepository<PromoCode> _promoCodesRepository;
         private readonly IRepository<Preference> _preferencesRepository;
         private readonly IRepository<Customer> _customersRepository;
+        private readonly ICustomerPreferenceRepository _customersPreferenceRepository;
 
-        public PromocodesController(IRepository<PromoCode> promoCodesRepository, 
-            IRepository<Preference> preferencesRepository, IRepository<Customer> customersRepository)
+        public PromocodesController(IRepository<PromoCode> promoCodesRepository,
+            IRepository<Preference> preferencesRepository, 
+            IRepository<Customer> customersRepository, 
+            ICustomerPreferenceRepository customersPreferenceRepository)
         {
             _promoCodesRepository = promoCodesRepository;
             _preferencesRepository = preferencesRepository;
             _customersRepository = customersRepository;
+            _customersPreferenceRepository = customersPreferenceRepository;
         }
-        
+
         /// <summary>
         /// Получить все промокоды
         /// </summary>
@@ -68,9 +74,9 @@ namespace Pcf.GivingToCustomer.WebHost.Controllers
             }
 
             //  Получаем клиентов с этим предпочтением:
-            var customers = await _customersRepository
-                .GetWhere(d => d.Preferences.Any(x =>
-                    x.Preference.Id == preference.Id));
+            var customerPreferences = await _customersPreferenceRepository.GetAllCustomersByPreferenceIdAsync(preference.Id);
+            var customersIds = customerPreferences.Select(x => x.CustomerId).ToList();
+            var customers = await _customersRepository.GetWhere(x => customersIds.Contains(x.Id));
 
             PromoCode promoCode = PromoCodeMapper.MapFromModel(request, preference, customers);
 

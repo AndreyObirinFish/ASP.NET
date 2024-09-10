@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Pcf.GivingToCustomer.Core.Abstractions.Repositories;
 using Pcf.GivingToCustomer.Core.Domain;
+using Pcf.GivingToCustomer.DataAccess;
 using Pcf.GivingToCustomer.WebHost.Mappers;
 using Pcf.GivingToCustomer.WebHost.Models;
 
@@ -20,14 +21,24 @@ namespace Pcf.GivingToCustomer.WebHost.Controllers
     {
         private readonly IRepository<Customer> _customerRepository;
         private readonly IRepository<Preference> _preferenceRepository;
+        private readonly IRepository<PromoCode> _promoCodeRepository;
+        private readonly ICustomerPreferenceRepository _customerPreferenceRepository;
+        private readonly IPromoCodeCustomersRepository _promotionCodeCustomersRepository;
 
-        public CustomersController(IRepository<Customer> customerRepository, 
-            IRepository<Preference> preferenceRepository)
+        public CustomersController(IRepository<Customer> customerRepository,
+            IRepository<Preference> preferenceRepository,
+            DataContext dataContext,
+            ICustomerPreferenceRepository customerPreferenceRepository,
+            IPromoCodeCustomersRepository promotionCodeCustomersRepository,
+            IRepository<PromoCode> promoCodeRepository)
         {
             _customerRepository = customerRepository;
             _preferenceRepository = preferenceRepository;
+            _customerPreferenceRepository = customerPreferenceRepository;
+            _promotionCodeCustomersRepository = promotionCodeCustomersRepository;
+            _promoCodeRepository = promoCodeRepository;
         }
-        
+
         /// <summary>
         /// Получить список клиентов
         /// </summary>
@@ -57,6 +68,16 @@ namespace Pcf.GivingToCustomer.WebHost.Controllers
         public async Task<ActionResult<CustomerResponse>> GetCustomerAsync(Guid id)
         {
             var customer =  await _customerRepository.GetByIdAsync(id);
+            if (customer is null)
+                return NotFound();
+
+            var customerPreferences = await _customerPreferenceRepository.GetAllCustomerPreferencesByCustomerIdAsync(customer.Id);
+            var customerPreferencesIds = customerPreferences.Select(x => x.PreferenceId);
+            await _preferenceRepository.GetWhere(x => customerPreferencesIds.Contains(x.Id));
+
+            var promocodesCustomer = await _promotionCodeCustomersRepository.GetAllCustomerPromoCodesByCustomerIdAsync(customer.Id);
+            var customerPromocodesIds = promocodesCustomer.Select(x => x.PromoCodeId);
+            await _promoCodeRepository.GetWhere(x => customerPromocodesIds.Contains(x.Id));
 
             var response = new CustomerResponse(customer);
 

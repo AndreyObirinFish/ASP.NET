@@ -13,6 +13,10 @@ namespace Pcf.GivingToCustomer.DataAccess
         
         public DbSet<Preference> Preferences { get; set; }
 
+        public DbSet<CustomerPreference> CustomerPreferences { get; set; }
+
+        public DbSet<PromoCodeCustomer> PromoCodeCustomers { get; set; }
+
         public DataContext()
         {
             
@@ -21,7 +25,7 @@ namespace Pcf.GivingToCustomer.DataAccess
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)
         {
-
+            Database.AutoTransactionBehavior = AutoTransactionBehavior.Never;
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

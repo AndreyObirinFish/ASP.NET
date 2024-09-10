@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using MongoDB.Bson;
 
 namespace Pcf.Administration.WebHost
 {
@@ -7,6 +8,7 @@ namespace Pcf.Administration.WebHost
     {
         public static void Main(string[] args)
         {
+            BsonDefaults.GuidRepresentation = GuidRepresentation.Standard;
             CreateHostBuilder(args).Build().Run();
         }
 
